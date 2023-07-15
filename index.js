@@ -157,7 +157,7 @@ app.post("/login", function (req, res) {
    connection.query("SELECT * FROM user WHERE email='" + email + "' AND password='" + password + "'", (err, results) => {
       if (err) throw err;
       if (results.length > 0) {
-         req.session.user = email;
+         // req.session.user = email;
          if (!Users.includes(email))
             Users.push(email);
          // res.setHeader('Set-Cookie', 'email=' + email + "; Path=/;");
