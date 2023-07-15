@@ -33,7 +33,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(upload.array());
 app.use(cookieParser());
-app.use(session({ secret: "Shh, its a secret!" }));
+// app.use(session({ secret: "Shh, its a secret!" }));
 
 var Users = [];
 
