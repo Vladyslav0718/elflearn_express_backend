@@ -18,7 +18,8 @@ var app = express();
 const cors = require("cors");
 var corsOptions = {
    origin: "https://webapp.elflearning.eu",
-   // origin: "*"
+   origin: "http://webapp.elflearning.eu",
+   origin: "*"
 };
 
 app.use(cors(corsOptions));
