@@ -38,17 +38,24 @@ app.use(session({ secret: "Shh, its a secret!" }));
 var Users = [];
 
 const mysql = require('mysql');
-const connection = mysql.createConnection({
+// const connection = mysql.createConnection({
+//    host: "192.185.190.91",
+//    user: "elflearn_localhost",
+//    password: "HAty8sraZGEQ",
+//    database: "elflearn_clone"
+// });
+
+const connection = mysql.createPool({
    host: "192.185.190.91",
    user: "elflearn_localhost",
    password: "HAty8sraZGEQ",
    database: "elflearn_clone"
 });
 
-connection.connect((err) => {
-   if (err) throw err;
-   console.log('Connected to the MySQL server!');
-});
+// connection.connect((err) => {
+//    if (err) throw err;
+//    console.log('Connected to the MySQL server!');
+// });
 
 function generatePassword(length) {
    var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]\:;?><,./-=";
