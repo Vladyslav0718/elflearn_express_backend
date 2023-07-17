@@ -39,24 +39,24 @@ app.use(cookieParser());
 var Users = [];
 
 const mysql = require('mysql');
-// const connection = mysql.createConnection({
-//    host: "192.185.190.91",
-//    user: "elflearn_localhost",
-//    password: "HAty8sraZGEQ",
-//    database: "elflearn_clone"
-// });
-
-const connection = mysql.createPool({
+const connection = mysql.createConnection({
    host: "192.185.190.91",
    user: "elflearn_localhost",
    password: "HAty8sraZGEQ",
    database: "elflearn_clone"
 });
 
-// connection.connect((err) => {
-//    if (err) throw err;
-//    console.log('Connected to the MySQL server!');
+// const connection = mysql.createPool({
+//    host: "192.185.190.91",
+//    user: "elflearn_localhost",
+//    password: "HAty8sraZGEQ",
+//    database: "elflearn_clone"
 // });
+
+connection.connect((err) => {
+   if (err) throw err;
+   console.log('Connected to the MySQL server!');
+});
 
 function generatePassword(length) {
    var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]\:;?><,./-=";
@@ -80,6 +80,10 @@ app.get('/', function (req, res) {
 
 // Get all countries from countries table when user sign up.
 app.get("/countries", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    connection.query('SELECT * FROM countries ORDER BY id ASC', (err, results) => {
       if (err) throw err;
       res.header('Access-Control-Allow-Origin', '*');
@@ -88,6 +92,10 @@ app.get("/countries", function (req, res) {
 });
 
 app.post("/checkSignIn", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const email = req.body.email;
    console.log(Users);
    if (Users.includes(email)) {
@@ -108,6 +116,10 @@ app.post("/checkSignIn", function (req, res) {
 
 // User signup
 app.post("/signup", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    var exist = 0;
    var user = req.body;
    const name = user.name;
@@ -152,6 +164,10 @@ app.post("/signup", function (req, res) {
 
 // User login
 app.post("/login", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const user = req.body;
    const email = user.email;
    const password = user.password;
@@ -182,6 +198,10 @@ app.post('/logout', function (req, res) {
 
 // get Teachers count
 app.get("/getTeachers", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    connection.query("SELECT COUNT(email) FROM user WHERE role='teacher'", (err, results) => {
       if (err) throw err;
       console.log(results[0]['COUNT(email)']);
@@ -192,6 +212,10 @@ app.get("/getTeachers", function (req, res) {
 
 // get routes count
 app.post("/getRoutes", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const user_id = req.body.user_id;
    const role = req.body.role;
    var sql = "SELECT COUNT(title) FROM games";
@@ -211,6 +235,10 @@ app.post("/getRoutes", function (req, res) {
 
 // get quizzes count
 app.post("/getQuizzes", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const user_id = req.body.user_id;
    const role = req.body.role;
    var sql = "SELECT COUNT(title) FROM quiz";
@@ -230,6 +258,10 @@ app.post("/getQuizzes", function (req, res) {
 
 // get students count
 app.post("/getStudents", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const user_id = req.body.user_id;
    const role = req.body.role;
    var sql = "SELECT DISTINCT student_id FROM assignedstudents";
@@ -249,6 +281,10 @@ app.post("/getStudents", function (req, res) {
 
 // update profile from profile.js
 app.post("/updateProfile", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    let uploadPath = null;
    let uploadFile = null;
    const user_id = req.body.user_id;
@@ -292,6 +328,10 @@ app.post("/updateProfile", function (req, res) {
 
 // update password from profile.js
 app.post("/updatePassword", function (req, res) {
+   connection.connect((err) => {
+      if (err) throw err;
+      console.log('Connected to the MySQL server!');
+   });
    const cur_pass = req.body.cur_pass;
    const new_pass = req.body.new_pass;
    const user_id = req.body.user_id;
