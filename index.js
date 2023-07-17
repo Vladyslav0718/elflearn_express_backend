@@ -54,10 +54,10 @@ const connection = mysql.createPool({
    database: "elflearn_clone"
 });
 
-connection.connect((err) => {
-   if (err) throw err;
-   console.log('Connected to the MySQL server!');
-});
+// connection.connect((err) => {
+//    if (err) throw err;
+//    console.log('Connected to the MySQL server!');
+// });
 
 // Attempt to catch disconnects 
 connection.on('connection', function (connection) {
