@@ -46,17 +46,25 @@ const mysql = require('mysql');
 //    database: "elflearn_clone"
 // });
 
+// connection.connect((err) => {
+//    if (err) throw err;
+//    console.log('Connected to the MySQL server!');
+// });
+
 const connection = mysql.createPool({
-   connectionLimit: 100,
+   connectionLimit: 255,
    host: "192.185.190.91",
    user: "elflearn_localhost",
    password: "HAty8sraZGEQ",
    database: "elflearn_clone"
 });
 
-// connection.connect((err) => {
-//    if (err) throw err;
-//    console.log('Connected to the MySQL server!');
+// const connection = mysql.createPool({
+//    connectionLimit: 100,
+//    host: "localhost",
+//    user: "root",
+//    password: "",
+//    database: "elflearn_clone"
 // });
 
 // Attempt to catch disconnects 
@@ -70,7 +78,7 @@ connection.on('connection', function (connection) {
      console.error(new Date(), 'MySQL close', err);
    });
  
- });
+});
 
 function generatePassword(length) {
    var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]\:;?><,./-=";
@@ -408,10 +416,10 @@ app.post("/getGames", function (req, res) {
    })
 });
 
-// get routes from routes.js
+// get route from routes.js
 app.post("/getGame", function (req, res) {
    const game_id = req.body.game_id;
-   const sql = "SELECT id, title, meters, mapcode, GeoCoor FROM games WHERE id=" + game_id;
+   const sql = "SELECT a.id, a.title, a.meters, a.mapcode, a.GeoCoor, COUNT(b.POIs) FROM games AS a, pois AS b WHERE a.id=b.game_id AND a.id=" + game_id;
    connection.query(sql, (err, results) => {
       if (err) throw err;
       if (results) {
@@ -425,7 +433,7 @@ app.post("/getGame", function (req, res) {
 app.post("/save_order", function (req, res) {
    console.log(req.body);
    const ids = req.body.poi_ids;
-   if (ids.length > 2) {
+   if (ids && ids.length > 2) {
       for (let i = 1; i < ids.length; i++) {
          const sql = "UPDATE pois SET poi_order=" + i + " WHERE id=" + ids[i];
          connection.query(sql, (err, results) => {
@@ -602,22 +610,23 @@ app.post("/savePOI", function (req, res) {
             location_title + "', '" + description + "', " + loc_str + ", '" + category + "', '" + YoutubeURL + "', " + show + ", " + order +
             ", " + game_id + ", " + teacher_id + ", '" + location + "')";
          console.log(sql);
-         connection.query(sql, (err, results) => {
-            if (err) throw err;
-            console.log(results);
+         connection.query(sql, (error, insert_results) => {
+            if (error) throw error;
+            console.log(insert_results);
             res.header('Access-Control-Allow-Origin', '*');
-            res.send(results);
+            res.send(insert_results);
          });
       })
    } else {
       const sql = "UPDATE pois SET location_title='" + location_title + "', description='" + description +
          "', POIs=" + loc_str + ", category='" + category + "', YoutubeURL='" + YoutubeURL + "', show_flag=" +
          show + ", location='" + location + "' WHERE id=" + poi_id;
-      connection.query(sql, (err, results) => {
-         if (err) throw err;
-         console.log(results);
+      connection.query(sql, (update_err, update_results) => {
+         console.log("save poi");
+         if (update_err) throw update_err;
+         console.log(update_results);
          res.header('Access-Control-Allow-Origin', '*');
-         res.send({ success: true, msg: "Successfully updated." });
+         res.send(update_results);
       });
    }
 
