@@ -4,6 +4,7 @@ var session = require('express-session');
 const https = require("https");
 const http = require('http');
 const fs = require('fs');
+const path = require("path");
 
 var app = express();
 
@@ -273,6 +274,7 @@ app.post("/getStudents", function (req, res) {
 app.post("/updateProfile", function (req, res) {   
    let uploadPath = null;
    let uploadFile = null;
+   let fileName = null;
    const user_id = req.body.user_id;
    const username = req.body.username;
    const email = req.body.email;
@@ -284,7 +286,8 @@ app.post("/updateProfile", function (req, res) {
    }
    console.log(user_id, username, email);
    if (uploadFile) {
-      uploadPath = './src/img/avatar/avatar' + Date.now() + uploadFile.name;
+      fileName = '/upload/' + Date.now() + uploadFile.name;
+      uploadPath = './public' + fileName;
       uploadFile.mv(uploadPath, function (err) {
          if (err)
             return res.status(500).send(err);
@@ -294,7 +297,7 @@ app.post("/updateProfile", function (req, res) {
    const where = " WHERE id=" + user_id;
    if (uploadFile) {
       sql = "UPDATE user SET username='" + username + "', email='" + email + "', image_url='"
-         + uploadPath + "', country=" + country;
+         + fileName + "', country=" + country;
    } else {
       sql = "UPDATE user SET username='" + username + "', email='" + email + "', country=" + country;
    }
@@ -307,7 +310,7 @@ app.post("/updateProfile", function (req, res) {
       if (err) throw err;
       if (results) {
          res.header('Access-Control-Allow-Origin', '*');
-         res.send({ image_url: uploadPath });
+         res.send({ image_url: fileName });
       }
    })
 });
@@ -354,6 +357,7 @@ app.post("/saveGame", function (req, res) {
    const title = req.body.name;
    let uploadPath = null;
    let uploadFile = null;
+   let fileName = null;
    console.log(req.files);
    if (req.files) {
       if (req.files.cover) uploadFile = req.files.cover;
@@ -363,7 +367,8 @@ app.post("/saveGame", function (req, res) {
 
    console.log(uploadFile);
    if (uploadFile) {
-      uploadPath = './src/img/user/user' + uploadFile.name;
+      fileName = '/upload/' + Date.now() + uploadFile.name;
+      uploadPath = './public' + fileName;
       uploadFile.mv(uploadPath, function (err) {
          if (err)
             return res.status(500).send(err);
@@ -373,7 +378,7 @@ app.post("/saveGame", function (req, res) {
    const loc_str = "ST_GeomFromText('POINT(" + lat.toString() + " " + lot.toString() + ")')";
    if (game_id == "") {
       const sql = "INSERT INTO games (GeoCoor, mapcode, meters, title, teacher_id, image) VALUES (" +
-         loc_str + ", '" + mapcode + "', " + meter + ", '" + title + "', " + user_id + ", '" + uploadPath + "')";
+         loc_str + ", '" + mapcode + "', " + meter + ", '" + title + "', " + user_id + ", '" + fileName + "')";
       connection.query(sql, (err, results) => {
          if (err) throw err;
          if (results) {
@@ -383,13 +388,13 @@ app.post("/saveGame", function (req, res) {
          }
       });
    } else {
-      const sql = "UPDATE games SET mapcode='" + mapcode + "', meters=" + meter + ", title='" + title + "', image='" + uploadPath + "' WHERE id=" + game_id;
+      const sql = "UPDATE games SET mapcode='" + mapcode + "', meters=" + meter + ", title='" + title + "', image='" + fileName + "' WHERE id=" + game_id;
       console.log(sql);
       connection.query(sql, (err, results) => {
          if (err) throw err;
          if (results) {
             console.log(results);
-            res.header('Access-Control-Allow-Origin', '*');
+            // res.header('Access-Control-Allow-Origin', '*');
             res.send({ msg: "succeeded" });
          }
       });
@@ -656,6 +661,7 @@ app.post("/saveQuiz", function (req, res) {
    const quiz_id = req.body.quiz_id;
    let uploadPath = null;
    let uploadFile = null;
+   let fileName = null;
    console.log(req.files);
    if (req.files) {
       if (req.files.cover) uploadFile = req.files.cover;
@@ -665,7 +671,8 @@ app.post("/saveQuiz", function (req, res) {
 
    console.log(uploadFile);
    if (uploadFile) {
-      uploadPath = './src/img/user/user' + uploadFile.name;
+      fileName = '/upload/' + Date.now() + uploadFile.name;
+      uploadPath = './public' + fileName;
       uploadFile.mv(uploadPath, function (err) {
          if (err)
             return res.status(500).send(err);
@@ -675,11 +682,11 @@ app.post("/saveQuiz", function (req, res) {
    let sql = "";
    if (quiz_id == 0) {
       sql = "INSERT INTO quiz (details, title, status, teacher_id, image, poi_id) VALUES ('" + detail + "', '" +
-         title + "', '" + status + "', '" + teacher_id + "', '" + uploadPath + "', " + poi_id + ")";
+         title + "', '" + status + "', '" + teacher_id + "', '" + fileName + "', " + poi_id + ")";
 
    } else {
       sql = "UPDATE quiz SET title='" + title + "', details = '" + detail + "', status='" + status + "', image='"
-         + uploadPath + "' WHERE id=" + quiz_id;
+         + fileName + "' WHERE id=" + quiz_id;
    }
    connection.query(sql, (err, results) => {
       if (err) throw err;
@@ -750,6 +757,7 @@ app.post("/saveQuestion", function (req, res) {
    var check_str = "";
    let uploadPath = null;
    let uploadFile = null;
+   let fileName = null;
    let filename_str = "";
    let isArray;
    if (req.files) {
@@ -760,29 +768,31 @@ app.post("/saveQuestion", function (req, res) {
          for (let i = 0; i < req.files.image.length; i++) {
             uploadFile = req.files.image[i];
             if (uploadFile) {
-               uploadPath = './src/img/user/' + Date.now() + uploadFile.name;
+               fileName = '/upload/' + Date.now() + uploadFile.name;
+               uploadPath = './public' + fileName;
                uploadFile.mv(uploadPath, function (err) {
                   if (err)
                      return res.status(500).send(err);
                   // res.send('File uploaded!');
                });
                if (i == 0) {
-                  filename_str += uploadPath;
+                  filename_str += fileName;
                } else {
-                  filename_str += "," + uploadPath;
+                  filename_str += "," + fileName;
                }
             }
          }
       } else {
          uploadFile = req.files.image;
          if (uploadFile) {
-            uploadPath = './src/img/user/' + Date.now() + uploadFile.name;
+            fileName = '/upload/' + Date.now() + uploadFile.name;
+            uploadPath = './public' + fileName;
             uploadFile.mv(uploadPath, function (err) {
                if (err)
                   return res.status(500).send(err);
                // res.send('File uploaded!');
             });
-            filename_str = uploadPath;
+            filename_str = fileName;
          }
       }
    }
@@ -870,6 +880,7 @@ app.post("/addUser", function (req, res) {
    const role = req.body.new_role;
    let uploadPath = null;
    let uploadFile = null;
+   let fileName = null;
    if (req.files) {
       uploadFile = req.files.new_avatar;
    }
@@ -885,14 +896,15 @@ app.post("/addUser", function (req, res) {
    console.log(uploadFile);
    var sql = "";
    if (uploadFile) {
-      uploadPath = './src/img/avatar/avatar' + Date.now() + uploadFile.name;
+      fileName = '/upload/' + Date.now() + uploadFile.name;
+      uploadPath = './public' + fileName;
       uploadFile.mv(uploadPath, function (err) {
          if (err)
             return res.status(500).send(err);
          // res.send('File uploaded!');         
       });
       sql = "INSERT INTO user (username, email, country, role, password, image_url, createdAt) VALUES ('" + username + "', '" + email +
-         "', " + country + ", '" + role + "', '" + password + "', '" + uploadPath + "', '" + formattedDate + "')";
+         "', " + country + ", '" + role + "', '" + password + "', '" + fileName + "', '" + formattedDate + "')";
    } else {
       sql = "INSERT INTO user (username, email, country, role, password, createdAt) VALUES ('" + username + "', '" + email +
          "', " + country + ", '" + role + "', '" + password + "', '" + formattedDate + "')";
@@ -1124,7 +1136,7 @@ const PORT = process.env.PORT || 8080;
 // app.listen(PORT, () => {
 //    console.log(`Server is running on port ${PORT}.`);
 // });
-
+app.use(express.static(path.join(__dirname, 'public')));
 http.createServer(app).listen(PORT, () => {
    console.log(`Server is running on port ${PORT}.`);
 });
