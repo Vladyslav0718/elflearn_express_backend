@@ -353,7 +353,7 @@ app.post("/saveGame", function (req, res) {
    const lot = req.body.lot;
    const game_id = req.body.game_id;
    const meter = req.body.meter;
-   const mapcode = req.body.mapcode;
+   // const mapcode = req.body.mapcode;
    const title = req.body.name;
    let uploadPath = null;
    let uploadFile = null;
@@ -377,8 +377,10 @@ app.post("/saveGame", function (req, res) {
    }
    const loc_str = "ST_GeomFromText('POINT(" + lat.toString() + " " + lot.toString() + ")')";
    if (game_id == "") {
-      const sql = "INSERT INTO games (GeoCoor, mapcode, meters, title, teacher_id, image) VALUES (" +
-         loc_str + ", '" + mapcode + "', " + meter + ", '" + title + "', " + user_id + ", '" + fileName + "')";
+      // const sql = "INSERT INTO games (GeoCoor, mapcode, meters, title, teacher_id, image) VALUES (" +
+      //    loc_str + ", '" + mapcode + "', " + meter + ", '" + title + "', " + user_id + ", '" + fileName + "')";
+      const sql = "INSERT INTO games (GeoCoor, meters, title, teacher_id, image) VALUES (" +
+         loc_str + ", " + meter + ", '" + title + "', " + user_id + ", '" + fileName + "')";
       connection.query(sql, (err, results) => {
          if (err) throw err;
          if (results) {
@@ -388,7 +390,8 @@ app.post("/saveGame", function (req, res) {
          }
       });
    } else {
-      const sql = "UPDATE games SET mapcode='" + mapcode + "', meters=" + meter + ", title='" + title + "', image='" + fileName + "' WHERE id=" + game_id;
+      // const sql = "UPDATE games SET mapcode='" + mapcode + "', meters=" + meter + ", title='" + title + "', image='" + fileName + "' WHERE id=" + game_id;
+      const sql = "UPDATE games SET meters=" + meter + ", title='" + title + "', image='" + fileName + "' WHERE id=" + game_id;
       console.log(sql);
       connection.query(sql, (err, results) => {
          if (err) throw err;
@@ -424,7 +427,8 @@ app.post("/getGames", function (req, res) {
 // get route from routes.js
 app.post("/getGame", function (req, res) {
    const game_id = req.body.game_id;
-   const sql = "SELECT a.id, a.title, a.meters, a.mapcode, a.GeoCoor, COUNT(b.POIs) FROM games AS a, pois AS b WHERE a.id=b.game_id AND a.id=" + game_id;
+   // const sql = "SELECT a.id, a.title, a.meters, a.mapcode, a.GeoCoor, COUNT(b.POIs) FROM games AS a, pois AS b WHERE a.id=b.game_id AND a.id=" + game_id;
+   const sql = "SELECT a.id, a.title, a.meters, a.GeoCoor, COUNT(b.POIs) FROM games AS a, pois AS b WHERE a.id=b.game_id AND a.id=" + game_id;
    connection.query(sql, (err, results) => {
       if (err) throw err;
       if (results) {
@@ -601,7 +605,7 @@ app.post("/savePOI", function (req, res) {
    const show = req.body.show;
    const game_id = req.body.game_id;
    const teacher_id = req.body.teacher_id;
-   const location = req.body.location;
+   // const location = req.body.location;
    const poi_id = req.body.poi_id;
    const loc_str = "ST_GeomFromText('POINT(" + lat.toString() + " " + lng.toString() + ")')";
    if (poi_id == 0) {
@@ -611,9 +615,12 @@ app.post("/savePOI", function (req, res) {
          var order = results[0]['MAX(poi_order)'];
          if (!order) order = 1;
          else order++;
-         const sql = "INSERT INTO pois (location_title, description, POIs, category, YoutubeURL, show_flag, poi_order, game_id, teacher_id, location) VALUES ('" +
+         // const sql = "INSERT INTO pois (location_title, description, POIs, category, YoutubeURL, show_flag, poi_order, game_id, teacher_id, location) VALUES ('" +
+         //    location_title + "', '" + description + "', " + loc_str + ", '" + category + "', '" + YoutubeURL + "', " + show + ", " + order +
+         //    ", " + game_id + ", " + teacher_id + ", '" + location + "')";
+         const sql = "INSERT INTO pois (location_title, description, POIs, category, YoutubeURL, show_flag, poi_order, game_id, teacher_id) VALUES ('" +
             location_title + "', '" + description + "', " + loc_str + ", '" + category + "', '" + YoutubeURL + "', " + show + ", " + order +
-            ", " + game_id + ", " + teacher_id + ", '" + location + "')";
+            ", " + game_id + ", " + teacher_id + ")";
          console.log(sql);
          connection.query(sql, (error, insert_results) => {
             if (error) throw error;
@@ -623,9 +630,12 @@ app.post("/savePOI", function (req, res) {
          });
       })
    } else {
+      // const sql = "UPDATE pois SET location_title='" + location_title + "', description='" + description +
+      //    "', POIs=" + loc_str + ", category='" + category + "', YoutubeURL='" + YoutubeURL + "', show_flag=" +
+      //    show + ", location='" + location + "' WHERE id=" + poi_id;
       const sql = "UPDATE pois SET location_title='" + location_title + "', description='" + description +
          "', POIs=" + loc_str + ", category='" + category + "', YoutubeURL='" + YoutubeURL + "', show_flag=" +
-         show + ", location='" + location + "' WHERE id=" + poi_id;
+         show + " WHERE id=" + poi_id;
       connection.query(sql, (update_err, update_results) => {
          console.log("save poi");
          if (update_err) throw update_err;
@@ -750,11 +760,13 @@ app.post("/saveQuestion", function (req, res) {
    const quiz_id = req.body.quiz_id;
    const ques_id = req.body.ques_id;
    const question = req.body.question;
-   const url = req.body.url;
+   const urls = req.body.urls;
    const answers = req.body.answers;
    const checks = req.body.checks;
+   const info = req.body.info;
    var answer_str = "";
    var check_str = "";
+   var url_str = "";
    let uploadPath = null;
    let uploadFile = null;
    let fileName = null;
@@ -799,7 +811,7 @@ app.post("/saveQuestion", function (req, res) {
    console.log(filename_str);
    var check_array = checks.split(",");
    for (let i = 0; i < check_array.length; i++) {
-      if (check_array[i]) {
+      if (check_array[i] == 'true') {
          if (check_str == "") {
             check_str += answers[i];
          } else {
@@ -812,15 +824,22 @@ app.post("/saveQuestion", function (req, res) {
          answer_str += "," + answers[i];
       }
    }
-
+   for (let i = 0; i < urls.length; i++) {
+      if (urls[i] != "") {
+         if (url_str == "") {
+            url_str += urls[i];
+         } else {
+            url_str += "," + urls[i];
+         }
+      }
+   }
    let sql = "";
    if (ques_id == 0) {
-      sql = "INSERT INTO questions (question, url, answers, all_images, options, quiz_id) VALUES ('" + question + "', '" +
-         url + "', '" + answer_str + "', '" + filename_str + "', '" + check_str + "', " + quiz_id + ")";
-
+      sql = "INSERT INTO questions (question, url, answers, all_images, options, quiz_id, info) VALUES ('" + question + "', '" +
+         url_str + "', '" + answer_str + "', '" + filename_str + "', '" + check_str + "', " + quiz_id + ", '" + info + "')";
    } else {
-      sql = "UPDATE questions SET question='" + question + "', url = '" + url + "', answers='" + answer_str + "', all_images='"
-         + filename_str + "', options='" + check_str + "' WHERE id=" + ques_id;
+      sql = "UPDATE questions SET question='" + question + "', url = '" + url_str + "', answers='" + answer_str + "', all_images='"
+         + filename_str + "', options='" + check_str + "', info='" + info + "' WHERE id=" + ques_id;
    }
    console.log(sql);
    connection.query(sql, (err, results) => {
@@ -848,7 +867,7 @@ app.post("/getQuestions", function (req, res) {
 // get question by ques_id from questions.js
 app.post("/getQuestion", function (req, res) {
    const ques_id = req.body.ques_id;
-   const sql = "SELECT b.id, a.question, a.url, a.answers, a.all_images, a.options, b.title FROM questions AS a, quiz AS b WHERE a.quiz_id=b.id AND a.id=" + ques_id;
+   const sql = "SELECT b.id, a.question, a.url, a.answers, a.all_images, a.options, a.info, b.title FROM questions AS a, quiz AS b WHERE a.quiz_id=b.id AND a.id=" + ques_id;
    connection.query(sql, (err, results) => {
       if (err) throw err;
       if (results) {
